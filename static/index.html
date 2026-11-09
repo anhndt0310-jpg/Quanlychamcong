@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeTrack Pro - Hệ Thống Quản Lý Chấm Công & Nhân Sự</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i data-lucide="clock-4" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TimeTrack Pro</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 uppercase">Enterprise</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-medium">Hệ Thống Chấm Công & Quản Lý Nhân Sự</p>
+                </div>
+            </div>
+
+            <!-- Real-time Clock Banner -->
+            <div class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/80 text-xs font-medium text-slate-700 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="header-realtime-clock" class="font-mono">--:--:--</span>
+            </div>
+
+            <!-- Quick Action & Admin User -->
+            <div class="flex items-center gap-3">
+                <button onclick="switchTab('kiosk')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition-all transform active:scale-95">
+                    <i data-lucide="scan-face" class="w-4 h-4"></i>
+                    <span>Chấm Công Nhanh</span>
+                </button>
+
+                <div class="h-6 w-px bg-slate-200 mx-1"></div>
+
+                <div class="flex items-center gap-2.5">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=AdminHR" class="w-8 h-8 rounded-full border border-slate-200 bg-blue-50" alt="Avatar">
+                    <div class="hidden sm:block text-left">
+                        <div class="text-xs font-bold text-slate-800 leading-tight">Admin HR</div>
+                        <div class="text-[10px] text-slate-400">Quản trị viên</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col md:flex-row gap-6">
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-60 flex-shrink-0">
+            <nav class="bg-white rounded-2xl border border-slate-200/80 p-2.5 shadow-sm space-y-1">
+                <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all active">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-500"></i>
+                    <span>Tổng quan (Dashboard)</span>
+                </button>
+
+                <button onclick="switchTab('kiosk')" data-tab="kiosk" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i data-lucide="fingerprint" class="w-4 h-4 text-slate-500"></i>
+                    <span>Kiosk Chấm Công</span>
+                </button>
+
+                <button onclick="switchTab('attendance')" data-tab="attendance" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i data-lucide="calendar-check" class="w-4 h-4 text-slate-500"></i>
+                    <span>Bảng Công Chi Tiết</span>
+                </button>
+
+                <button onclick="switchTab('employees')" data-tab="employees" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-500"></i>
+                    <span>Quản Lý Nhân Viên</span>
+                </button>
+
+                <button onclick="switchTab('leaves')" data-tab="leaves" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i data-lucide="file-text" class="w-4 h-4 text-slate-500"></i>
+                    <span>Đơn Từ & Nghỉ Phép</span>
+                </button>
+
+                <button onclick="switchTab('reports')" data-tab="reports" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-slate-500"></i>
+                    <span>Báo Cáo & Tính Công</span>
+                </button>
+
+                <button onclick="switchTab('settings')" data-tab="settings" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i data-lucide="settings" class="w-4 h-4 text-slate-500"></i>
+                    <span>Cài Đặt Hệ Thống</span>
+                </button>
+            </nav>
+
+            <!-- Support / Company info card -->
+            <div class="mt-4 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/60 hidden md:block">
+                <div class="flex items-center gap-2 text-blue-700 font-semibold text-xs">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>Phiên bản v2.0 Enterprise</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Dữ liệu được lưu trữ an toàn trong cơ sở dữ liệu SQLite cục bộ.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0">
+
+            <!-- ================= VIEW 1: DASHBOARD ================= -->
+            <div id="view-dashboard" class="tab-view space-y-6">
+                <!-- KPI Stat Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+                    <!-- Total Employees -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-medium">Tổng Nhân Sự</span>
+                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i>
+                        </div>
+                        <div id="stat-total-emp" class="text-2xl font-black text-slate-800 mt-2">--</div>
+                        <span class="text-[10px] text-slate-400">Đang hoạt động</span>
+                    </div>
+
+                    <!-- Present Today -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-medium">Đi Làm Hôm Nay</span>
+                            <i data-lucide="user-check" class="w-4 h-4 text-emerald-500"></i>
+                        </div>
+                        <div id="stat-present" class="text-2xl font-black text-emerald-600 mt-2">--</div>
+                        <span class="text-[10px] text-emerald-600 font-medium">Có mặt tại VP</span>
+                    </div>
+
+                    <!-- Late Today -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-medium">Đi Muộn</span>
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+                        </div>
+                        <div id="stat-late" class="text-2xl font-black text-amber-600 mt-2">--</div>
+                        <span class="text-[10px] text-amber-600 font-medium">Vào sau giờ ân hạn</span>
+                    </div>
+
+                    <!-- Not Checked-in -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-medium">Chưa Điểm Danh</span>
+                            <i data-lucide="clock" class="w-4 h-4 text-rose-500"></i>
+                        </div>
+                        <div id="stat-not-checked" class="text-2xl font-black text-rose-600 mt-2">--</div>
+                        <span class="text-[10px] text-slate-400">Chưa có bản ghi</span>
+                    </div>
+
+                    <!-- Pending Leaves -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-medium">Đơn Chờ Duyệt</span>
+                            <i data-lucide="file-question" class="w-4 h-4 text-indigo-500"></i>
+                        </div>
+                        <div id="stat-leaves" class="text-2xl font-black text-indigo-600 mt-2">--</div>
+                        <span class="text-[10px] text-indigo-600 font-medium cursor-pointer" onclick="switchTab('leaves')">Xem đơn &rarr;</span>
+                    </div>
+
+                    <!-- Attendance Rate -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-medium">Tỷ Lệ Đúng Giờ</span>
+                            <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div id="stat-rate" class="text-2xl font-black text-blue-600 mt-2">--%</div>
+                        <span class="text-[10px] text-slate-400">Hôm nay</span>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Weekly Attendance Bar Chart -->
+                    <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-sm text-slate-800">Thống Kê Chấm Công 7 Ngày Gần Nhất</h3>
+                                <p class="text-xs text-slate-400">Phân bố Đúng giờ, Đi muộn, Nghỉ phép theo từng ngày</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600 font-medium">Cập nhật tự động</span>
+                        </div>
+                        <div class="h-64 w-full">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Department Distribution Chart -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-sm text-slate-800">Phân Bổ Nhân Sự</h3>
+                            <p class="text-xs text-slate-400">Tỷ lệ theo từng phòng ban</p>
+                        </div>
+                        <div class="h-64 w-full flex items-center justify-center">
+                            <canvas id="deptChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Today Attendance List & Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Today Attendance Table -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-sm text-slate-800">Điểm Danh Ngày Hôm Nay</h3>
+                                <p class="text-xs text-slate-400">Trạng thái chấm công thời gian thực của nhân viên</p>
+                            </div>
+                            <button onclick="loadTodayAttendanceTable()" class="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs flex items-center gap-1.5 transition">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                <span>Làm mới</span>
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase">
+                                    <tr>
+                                        <th class="px-4 py-3">Nhân Viên</th>
+                                        <th class="px-4 py-3">Phòng Ban</th>
+                                        <th class="px-4 py-3">Ca Làm</th>
+                                        <th class="px-4 py-3">Giờ Vào</th>
+                                        <th class="px-4 py-3">Giờ Ra</th>
+                                        <th class="px-4 py-3">Trạng Thái</th>
+                                        <th class="px-4 py-3">Số Giờ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="today-attendance-tbody" class="divide-y divide-slate-100">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Live Feed -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-sm text-slate-800">Hoạt Động Gần Nhất</h3>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        </div>
+                        <div id="recent-activities-list" class="space-y-2.5 flex-1 overflow-y-auto max-h-[380px]">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 2: KIOSK CHẤM CÔNG ================= -->
+            <div id="view-kiosk" class="tab-view hidden space-y-6">
+                <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-3xl p-6 md:p-10 shadow-xl relative overflow-hidden">
+                    <!-- Glowing Background effect -->
+                    <div class="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- Big Clock Header -->
+                    <div class="text-center mb-8 relative z-10">
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i data-lucide="radio" class="w-3.5 h-3.5 animate-pulse text-emerald-400"></i>
+                            Kiosk Điểm Danh Điện Tử Trực Tuyến
+                        </span>
+                        <div id="kiosk-digital-clock" class="text-5xl sm:text-7xl font-mono font-black tracking-tight text-white drop-shadow">--:--:--</div>
+                        <div id="kiosk-digital-date" class="text-slate-300 text-sm sm:text-base font-medium mt-1">--</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10 max-w-4xl mx-auto">
+                        <!-- Camera / Recognition Frame -->
+                        <div class="camera-scanner bg-slate-950 aspect-[4/3] rounded-2xl border-2 border-blue-500/40 flex items-center justify-center overflow-hidden shadow-2xl relative">
+                            <video id="kiosk-video" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+                            <div id="camera-placeholder" class="text-slate-400 text-center p-6 flex flex-col items-center">
+                                <div class="w-16 h-16 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-3">
+                                    <i data-lucide="camera" class="w-8 h-8"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-slate-200">Camera Nhận Diện Tự Động</span>
+                                <span class="text-xs text-slate-400 mt-1">Đang kết nối camera hoặc ở chế độ mô phỏng Web</span>
+                            </div>
+                            <div class="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-md rounded-lg px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-300">
+                                <span><i data-lucide="map-pin" class="inline w-3 h-3 text-emerald-400 mr-1"></i>Trụ sở Văn phòng chính</span>
+                                <span class="font-mono text-emerald-400">GPS: 21.0285° N, 105.8542° E</span>
+                            </div>
+                        </div>
+
+                        <!-- Check-in Action Form -->
+                        <div class="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-xl flex flex-col space-y-4 text-slate-100">
+                            <h3 class="font-bold text-base text-white flex items-center gap-2">
+                                <i data-lucide="user-check" class="w-5 h-5 text-blue-400"></i>
+                                <span>Xác Nhận Điểm Danh</span>
+                            </h3>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-200 mb-1.5">Chọn Nhân Viên:</label>
+                                <select id="kiosk-emp-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white text-sm focus:outline-none focus:border-blue-400">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+
+                            <div class="relative">
+                                <label class="block text-xs font-semibold text-slate-200 mb-1.5">Hoặc nhập Mã Nhân Viên (NV001, NV002...):</label>
+                                <div class="relative">
+                                    <input id="kiosk-code-input" type="text" placeholder="Ví dụ: NV004" 
+                                           class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white font-mono uppercase text-sm focus:outline-none focus:border-blue-400 pl-10">
+                                    <i data-lucide="hash" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-200 mb-1.5">Ghi chú (tùy chọn):</label>
+                                <input id="kiosk-note-input" type="text" placeholder="Lý do đi muộn, công tác, v.v." 
+                                       class="w-full px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-700 text-white text-xs focus:outline-none focus:border-blue-400">
+                            </div>
+
+                            <!-- Big 2 Buttons -->
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <button onclick="handleKioskCheckIn()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all">
+                                    <i data-lucide="log-in" class="w-5 h-5"></i>
+                                    <span>VÀO CA (IN)</span>
+                                </button>
+
+                                <button onclick="handleKioskCheckOut()" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-sm shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                                    <span>RA CA (OUT)</span>
+                                </button>
+                            </div>
+
+                            <p class="text-[11px] text-slate-400 text-center pt-1">
+                                Quy định ca: 08:00 - 17:30 (Cho phép ân hạn trễ 15 phút)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 3: BẢNG CÔNG CHI TIẾT ================= -->
+            <div id="view-attendance" class="tab-view hidden space-y-5">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
+                    <!-- Filters Toolbar -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Từ ngày:</label>
+                            <input id="log-date-from" type="date" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Đến ngày:</label>
+                            <input id="log-date-to" type="date" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Phòng ban:</label>
+                            <select id="log-dept-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                                <option value="">Tất cả phòng ban</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Trạng thái:</label>
+                            <select id="log-status-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="on_time">Đúng giờ</option>
+                                <option value="late">Đi muộn</option>
+                                <option value="early_leave">Về sớm</option>
+                                <option value="leave">Nghỉ phép</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tìm kiếm:</label>
+                            <input id="log-search-input" type="text" placeholder="Tên hoặc mã NV..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Filter action buttons -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <button onclick="loadAttendanceLogs()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+                            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                            <span>Lọc Dữ Liệu</span>
+                        </button>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportExcel()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+                                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                                <span>Xuất Excel (.xlsx)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Table -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase">
+                                <tr>
+                                    <th class="px-4 py-3">Ngày</th>
+                                    <th class="px-4 py-3">Nhân Viên</th>
+                                    <th class="px-4 py-3">Phòng Ban</th>
+                                    <th class="px-4 py-3">Giờ Vào</th>
+                                    <th class="px-4 py-3">Giờ Ra</th>
+                                    <th class="px-4 py-3">Trạng Thái</th>
+                                    <th class="px-4 py-3">Tổng Giờ</th>
+                                    <th class="px-4 py-3">Ghi Chú</th>
+                                    <th class="px-4 py-3 text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-logs-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 4: QUẢN LÝ NHÂN VIÊN ================= -->
+            <div id="view-employees" class="tab-view hidden space-y-5">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <input id="emp-search-input" type="text" placeholder="Tìm theo tên, mã NV, email..." oninput="loadEmployeesView()"
+                               class="px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 w-full sm:w-64">
+                        <select id="emp-dept-filter" onchange="loadEmployeesView()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="">Tất cả phòng ban</option>
+                        </select>
+                    </div>
+
+                    <button onclick="openAddEmployeeModal()" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>Thêm Nhân Viên</span>
+                    </button>
+                </div>
+
+                <!-- Employees Grid Cards -->
+                <div id="employees-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- ================= VIEW 5: ĐƠN TỪ & NGHỈ PHÉP ================= -->
+            <div id="view-leaves" class="tab-view hidden space-y-5">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <label class="text-xs font-semibold text-slate-600">Trạng thái:</label>
+                        <select id="leave-status-filter" onchange="loadLeaveRequests()" class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="all">Tất cả đơn</option>
+                            <option value="pending" selected>Chờ phê duyệt</option>
+                            <option value="approved">Đã phê duyệt</option>
+                            <option value="rejected">Đã từ chối</option>
+                        </select>
+                    </div>
+
+                    <button onclick="openCreateLeaveModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Tạo Đơn Mới</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase">
+                                <tr>
+                                    <th class="px-4 py-3">Nhân Viên</th>
+                                    <th class="px-4 py-3">Loại Đơn</th>
+                                    <th class="px-4 py-3">Thời Gian</th>
+                                    <th class="px-4 py-3">Lý Do</th>
+                                    <th class="px-4 py-3">Ngày Gửi</th>
+                                    <th class="px-4 py-3">Trạng Thái</th>
+                                    <th class="px-4 py-3 text-right">Xét Duyệt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leave-requests-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 6: BÁO CÁO & TÍNH CÔNG ================= -->
+            <div id="view-reports" class="tab-view hidden space-y-5">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <label class="text-xs font-semibold text-slate-600">Chọn Tháng Báo Cáo:</label>
+                        <input id="report-month-picker" type="month" onchange="loadMonthlyReport()" class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 font-medium">
+                        <button onclick="loadMonthlyReport()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">Xem</button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500">Số ngày công chuẩn trong tháng:</span>
+                        <span id="report-standard-days" class="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-bold text-xs">--</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase">
+                                <tr>
+                                    <th class="px-4 py-3">Mã NV</th>
+                                    <th class="px-4 py-3">Họ và Tên</th>
+                                    <th class="px-4 py-3">Phòng Ban</th>
+                                    <th class="px-4 py-3">Công Thực Tế</th>
+                                    <th class="px-4 py-3">Đúng Giờ</th>
+                                    <th class="px-4 py-3">Đi Muộn</th>
+                                    <th class="px-4 py-3">Nghỉ Phép</th>
+                                    <th class="px-4 py-3">Tổng Giờ</th>
+                                    <th class="px-4 py-3">Tiến Độ Công</th>
+                                    <th class="px-4 py-3 text-right">Xếp Loại</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 7: CÀI ĐẶT HỆ THỐNG ================= -->
+            <div id="view-settings" class="tab-view hidden space-y-6">
+                <!-- Company General Settings -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                    <h3 class="font-bold text-base text-slate-800 mb-1">Cấu Hình Công Ty & Quy Định Chấm Công</h3>
+                    <p class="text-xs text-slate-400 mb-5">Thiết lập thông tin chung và các thông số tính công toàn công ty</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Doanh Nghiệp:</label>
+                            <input id="setting-company-name" type="text" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Địa Chỉ Văn Phòng:</label>
+                            <input id="setting-company-address" type="text" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Wi-Fi Nội Bộ:</label>
+                            <input id="setting-company-wifi" type="text" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Thời Gian Cho Phép Ân Hạn Trễ (Phút):</label>
+                            <input id="setting-grace-minutes" type="number" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-slate-100 flex justify-end">
+                        <button onclick="saveGeneralSettings()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition">
+                            Lưu Cấu Hình
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Shift Management List -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                    <h3 class="font-bold text-base text-slate-800 mb-1">Danh Sách Ca Làm Việc</h3>
+                    <p class="text-xs text-slate-400 mb-4">Các ca làm việc đang áp dụng cho nhân viên</p>
+                    <div id="shifts-settings-container" class="space-y-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Reset Demo Data -->
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-6">
+                    <h3 class="font-bold text-sm text-rose-800 mb-1">Khôi Phục Dữ Liệu Demo Ban Đầu</h3>
+                    <p class="text-xs text-rose-600 mb-4">Hành động này sẽ thiết lập lại toàn bộ danh sách 12 nhân viên và lịch sử chấm công 14 ngày mẫu.</p>
+                    <button onclick="resetDemoData()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition">
+                        Đặt Lại Toàn Bộ Dữ Liệu Mẫu
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Kiosk Success Modal -->
+    <div id="kiosk-result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center mb-4">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h3 id="kiosk-modal-title" class="font-bold text-lg text-emerald-600">ĐIỂM DANH THÀNH CÔNG</h3>
+            <p id="kiosk-modal-name" class="font-bold text-base text-slate-800 mt-1">--</p>
+            <div id="kiosk-modal-time" class="font-mono text-3xl font-black text-blue-600 my-2">--:--:--</div>
+            <div id="kiosk-modal-status" class="mb-3">--</div>
+            <p id="kiosk-modal-extra" class="text-xs text-slate-500 mb-4">--</p>
+            <button onclick="closeModal('kiosk-result-modal')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employee-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 id="emp-modal-title" class="font-bold text-base text-slate-800">Thêm Nhân Viên Mới</h3>
+                <button onclick="closeModal('employee-modal')" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            <input type="hidden" id="emp-form-id">
+            <div class="grid grid-cols-2 gap-3 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Mã NV (*):</label>
+                    <input id="emp-form-code" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono uppercase">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Họ và Tên (*):</label>
+                    <input id="emp-form-name" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Email:</label>
+                    <input id="emp-form-email" type="email" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Số Điện Thoại:</label>
+                    <input id="emp-form-phone" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Phòng Ban:</label>
+                    <select id="emp-form-dept" class="w-full px-3 py-2 rounded-xl border border-slate-200"></select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Chức Vụ (*):</label>
+                    <input id="emp-form-position" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Ca Làm Mặc Định:</label>
+                    <select id="emp-form-shift" class="w-full px-3 py-2 rounded-xl border border-slate-200"></select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Ngày Vào Làm:</label>
+                    <input id="emp-form-date" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-semibold text-slate-600 mb-1">Số Ngày Phép Năm Được Phép Nghỉ:</label>
+                    <input id="emp-form-leave" type="number" step="0.5" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeModal('employee-modal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Hủy</button>
+                <button onclick="saveEmployee()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold">Lưu Thông Tin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Leave Request Modal -->
+    <div id="create-leave-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-base text-slate-800">Tạo Đơn Xin Nghỉ / Đề Xuất</h3>
+                <button onclick="closeModal('create-leave-modal')" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Nhân Viên Làm Đơn:</label>
+                    <select id="leave-emp-select" class="w-full px-3 py-2 rounded-xl border border-slate-200"></select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Loại Đơn:</label>
+                    <select id="leave-type-select" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                        <option value="annual_leave">Nghỉ phép năm (Trừ quỹ phép)</option>
+                        <option value="sick_leave">Nghỉ ốm / Khám bệnh</option>
+                        <option value="late_early">Xin đi muộn / Về sớm</option>
+                        <option value="overtime">Đăng ký làm thêm giờ (OT)</option>
+                        <option value="business_trip">Đi công tác bên ngoài</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Từ Ngày:</label>
+                        <input id="leave-start-date" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Đến Ngày:</label>
+                        <input id="leave-end-date" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Số Ngày Nghỉ:</label>
+                    <input id="leave-days-count" type="number" step="0.5" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Lý Do Chi Tiết (*):</label>
+                    <textarea id="leave-reason" rows="3" placeholder="Nhập lý do cụ thể..." class="w-full px-3 py-2 rounded-xl border border-slate-200"></textarea>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <button onclick="closeModal('create-leave-modal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Đóng</button>
+                <button onclick="submitCreateLeave()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold">Gửi Đơn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Adjust Attendance Modal -->
+    <div id="adjust-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-sm text-slate-800">Điều Chỉnh Chấm Công Thủ Công</h3>
+                <button onclick="closeModal('adjust-modal')" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            <input type="hidden" id="adjust-emp-id">
+            <div class="space-y-3 mt-4 text-xs">
+                <div>
+                    <span class="text-slate-400">Nhân viên:</span>
+                    <p id="adjust-emp-name" class="font-bold text-slate-800 text-sm">--</p>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Ngày công:</label>
+                    <input id="adjust-date" type="date" class="w-full px-3 py-1.5 rounded-xl border border-slate-200" readonly>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Giờ Vào:</label>
+                        <input id="adjust-in" type="text" placeholder="08:00:00" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Giờ Ra:</label>
+                        <input id="adjust-out" type="text" placeholder="17:30:00" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Trạng Thái Ghi Nhận:</label>
+                    <select id="adjust-status" class="w-full px-3 py-1.5 rounded-xl border border-slate-200">
+                        <option value="on_time">Đúng giờ</option>
+                        <option value="late">Đi muộn</option>
+                        <option value="early_leave">Về sớm</option>
+                        <option value="leave">Nghỉ phép</option>
+                        <option value="business_trip">Công tác</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Lý do điều chỉnh:</label>
+                    <input id="adjust-note" type="text" placeholder="Ví dụ: Quên quẹt thẻ, gặp khách hàng..." class="w-full px-3 py-1.5 rounded-xl border border-slate-200">
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <button onclick="closeModal('adjust-modal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Hủy</button>
+                <button onclick="saveAdjustAttendance()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold">Cập Nhật Công</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Core App JS -->
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+    </script>
+</body>
+</html>
